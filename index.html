@@ -40,8 +40,14 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .meta div+div{padding-left:18px;border-left:1px solid var(--line-d)}
 .k{display:block;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:rgba(233,236,230,.55);margin-bottom:6px}
 .meta b{display:block;font-family:var(--display);font-weight:400;font-size:clamp(22px,3.4vw,32px);line-height:1.1}
-.cd{display:flex;gap:clamp(14px,3vw,28px);align-items:baseline;flex-wrap:wrap;font-size:13px;color:rgba(233,236,230,.6)}
-.cd span b{font-family:var(--display);font-size:clamp(28px,4vw,40px);font-weight:400;color:var(--mist);font-variant-numeric:tabular-nums lining-nums;margin-right:6px}
+.cdw{display:grid;gap:14px}
+.cd{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line-d);border-bottom:1px solid var(--line-d)}
+.cd div{padding:16px 0 14px;text-align:center;min-width:0}
+.cd div+div{border-left:1px solid var(--line-d)}
+.cd b{display:block;font-family:var(--display);font-weight:300;font-size:clamp(52px,10vw,104px);line-height:.95;color:var(--mist);font-variant-numeric:tabular-nums lining-nums;letter-spacing:-.02em}
+.cd div:first-child b{color:var(--ember)}
+.cd small{display:block;margin-top:6px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(233,236,230,.55)}
+.cd-done{font-family:var(--display);font-style:italic;font-size:clamp(36px,6vw,64px);color:var(--ember);margin:0}
 @media (max-width:640px){
   .title{grid-template-columns:1fr}
   .title .cap{grid-column:1;padding-top:14px}
@@ -125,8 +131,14 @@ h2 em{font-style:italic;font-weight:300}
       <div><span class="k">Время</span><b>16:00 — 21:00</b></div>
       <div><span class="k">Место</span><b>База «Лепота»</b></div>
     </div>
-    <div class="cd" id="cd" aria-live="off">
-      <span><b id="d">–</b>дн</span><span><b id="h">–</b>ч</span><span><b id="m">–</b>мин</span><span><b id="s">–</b>сек</span>
+    <div class="cdw">
+      <span class="k">До праздника</span>
+      <div class="cd" id="cd" aria-live="off">
+        <div><b id="d">–</b><small id="dl">дней</small></div>
+        <div><b id="h">–</b><small id="hl">часов</small></div>
+        <div><b id="m">–</b><small id="ml">минут</small></div>
+        <div><b id="s">–</b><small id="sl">секунд</small></div>
+      </div>
     </div>
   </div>
 </header>
@@ -220,10 +232,12 @@ h2 em{font-style:italic;font-weight:300}
   const T=Date.UTC(2026,10,8,13,0,0),p=n=>String(n).padStart(2,"0"),$=id=>document.getElementById(id);
   function tick(){
     const ms=T-Date.now();
-    if(ms<=0){$("cd").textContent="Праздник уже идёт";return}
-    const s=Math.floor(ms/1000);
-    $("d").textContent=Math.floor(s/86400);$("h").textContent=p(Math.floor(s/3600)%24);
-    $("m").textContent=p(Math.floor(s/60)%60);$("s").textContent=p(s%60);
+    if(ms<=0){$("cd").outerHTML='<p class="cd-done">Праздник уже идёт</p>';return}
+    const s=Math.floor(ms/1000),D=Math.floor(s/86400),H=Math.floor(s/3600)%24,M=Math.floor(s/60)%60,S=s%60;
+    const pl=(n,a,b,c)=>{const m10=n%10,m100=n%100;return m10===1&&m100!==11?a:m10>=2&&m10<=4&&(m100<12||m100>14)?b:c};
+    $("d").textContent=D;$("h").textContent=p(H);$("m").textContent=p(M);$("s").textContent=p(S);
+    $("dl").textContent=pl(D,"день","дня","дней");$("hl").textContent=pl(H,"час","часа","часов");
+    $("ml").textContent=pl(M,"минута","минуты","минут");$("sl").textContent=pl(S,"секунда","секунды","секунд");
     setTimeout(tick,1000-(Date.now()%1000));
   }
   tick();
